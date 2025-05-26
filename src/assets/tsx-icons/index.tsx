@@ -1,0 +1,11 @@
+export { default as React } from "./react";
+export { default as TypeScript } from "./typescript";
+export { default as TailwindCSS } from "./tailwind-css";
+export { default as TanStack } from "./tanstack";
+export { default as Google } from "./google";
+export { default as Prisma } from "./prisma";
+export { default as NestJS } from "./nest-js";
+export { default as NextJS } from "./next-js";
+export { default as PostgreSQL } from "./postgre-sql";
+export { default as Playwright } from "./playwright";
+export { default as GSAP } from "./gsap";
