@@ -14,11 +14,24 @@ import type { TRPCRouter } from "@/integrations/trpc/router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import PixelTrail from "@/components/pixel-trail.tsx";
+import { cn } from "@/lib/utils.ts";
 
 interface MyRouterContext {
   queryClient: QueryClient;
   trpc: TRPCOptionsProxy<TRPCRouter>;
 }
+
+interface BarProps {
+  bgFirst: string;
+  bgSecond: string;
+  className?: string;
+}
+const Bars = ({ bgFirst, bgSecond, className }: BarProps) => (
+  <div className={cn("bars flex flex-1 flex-col", className)}>
+    <div className={cn("h-3/4", bgFirst)}></div>
+    <div className={cn("h-1/4", bgSecond)}></div>
+  </div>
+);
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
@@ -84,16 +97,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           />
         </div>
 
-        <div className="pointer-events-none fixed inset-0 z-20 flex h-full w-full flex-row-reverse">
-          {[1, 2, 3, 4].map(() => (
-            <Fragment key={Math.random()}>
-              <div className="bars w-[5vw] bg-black"></div>
-              <div className="bars bg-purple w-[5vw]"></div>
-              <div className="bars bg-pink w-[5vw]"></div>
-              <div className="bars bg-orange w-[5vw]"></div>
-              <div className="bars bg-grey w-[5vw]"></div>
-            </Fragment>
-          ))}
+        <div className="pointer-events-none fixed inset-0 z-20 flex h-full w-full">
+          <Bars bgFirst="bg-[#E6E6E6]" bgSecond="bg-black" />
+          <Bars bgFirst="bg-[#E6E6A0]" bgSecond="bg-white" />
+          <Bars bgFirst="bg-[#A0E6E6]" bgSecond="bg-black" />
+          <Bars bgFirst="bg-[#A0E6A0]" bgSecond="bg-black" />
+          <Bars bgFirst="bg-[#E6A0E6]" bgSecond="bg-black" />
+          <Bars bgFirst="bg-[#E6A0A0]" bgSecond="bg-black" />
+          <Bars bgFirst="bg-[#A0A0E6]" bgSecond="bg-black" />
         </div>
 
         <Outlet />
