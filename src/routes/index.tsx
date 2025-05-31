@@ -16,7 +16,7 @@ import {
   TailwindCSS,
   TanStack,
   TypeScript,
-} from "@/assets/tsx-icons";
+} from "@/assets/skills-icons";
 import FeSweLogo from "@/assets/FeSwe";
 import Flowers from "@/assets/Flower";
 import Button from "@/components/button";
