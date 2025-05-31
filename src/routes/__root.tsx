@@ -7,7 +7,6 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { Fragment } from "react";
 import appCss from "../global.css?url";
 import TanStackQueryLayout from "../integrations/tanstack-query/layout.tsx";
 import type { TRPCRouter } from "@/integrations/trpc/router";

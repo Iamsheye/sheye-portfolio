@@ -209,8 +209,8 @@ function App() {
         type: "words",
         mask: "lines",
         onSplit(splitText) {
-          tl.from(splitText.words, {
-            yPercent: -100,
+          tl.to(splitText.words, {
+            yPercent: 100,
             ease: "power2.out",
             duration: 0.75,
           });
@@ -221,11 +221,19 @@ function App() {
         type: "words",
         mask: "lines",
         onSplit(splitText) {
-          gsap.from(splitText.words, {
-            delay: 1,
+          gsap.set("#bio", {
+            autoAlpha: 1,
+          });
+          gsap.set(splitText.words, {
             yPercent: 50,
             filter: "blur(8px)",
-            opacity: 0,
+            autoAlpha: 0,
+          });
+          gsap.to(splitText.words, {
+            delay: 1,
+            yPercent: 0,
+            filter: "blur(0px)",
+            autoAlpha: 1,
             duration: 0.6,
             stagger: 0.1,
             ease: "power2.out",
@@ -233,11 +241,15 @@ function App() {
         },
       });
 
-      tl.from(
+      gsap.set(mainSectionRef.current, {
+        autoAlpha: 0,
+        yPercent: 25,
+      });
+      tl.to(
         mainSectionRef.current,
         {
-          autoAlpha: 0,
-          yPercent: 25,
+          autoAlpha: 1,
+          yPercent: 0,
         },
         "+=2.5",
       );
@@ -250,7 +262,10 @@ function App() {
   return (
     <div className="container-wrapper">
       <div className="mt-10 mb-2 flex justify-center overflow-hidden md:mb-10">
-        <h1 id="name" className="text-[3.5rem] font-bold md:text-[8rem]">
+        <h1
+          id="name"
+          className="-translate-y-full text-[3.5rem] font-bold md:text-[8rem]"
+        >
           Oluwaseye
         </h1>
       </div>
@@ -258,7 +273,7 @@ function App() {
       <div className="mb-12 flex justify-center">
         <p
           id="bio"
-          className="max-w-[928px] text-center text-[1rem] tracking-[3%] md:text-[1.5rem]"
+          className="max-w-[928px] text-center text-[1rem] tracking-[3%] opacity-0 md:text-[1.5rem]"
         >
           I'm a Frontend Engineer with over 5 years of experience, specialising
           in crafting efficient, scalable, and user-friendly web applications.
@@ -379,7 +394,7 @@ function App() {
         <Mushroom className="absolute right-[5%] bottom-0 translate-y-1/4 scale-50 md:right-[15%] md:translate-y-0 md:scale-100" />
       </div>
 
-      <div className="mb-16 flex flex-col gap-14 sm:px-8 md:gap-10 md:px-16 lg:px-20">
+      <footer className="mb-16 flex flex-col gap-14 sm:px-8 md:gap-10 md:px-16 lg:px-20">
         <div className="flex flex-col gap-6 md:gap-8">
           <h2 className="text-[40px] font-bold md:text-[64px]">Get in touch</h2>
 
@@ -406,7 +421,7 @@ function App() {
             <Button bgColor="bg-orange">mothecreator</Button>
           </a>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
