@@ -348,7 +348,9 @@ function App() {
                   <div className="flex flex-wrap gap-3">
                     {project.links.map((link, i) => (
                       <a key={i} href={link.url} target="_blank">
-                        <Button bgColor="bg-white">{link.title}</Button>
+                        <Button hasStroke={false} bgColor="bg-white">
+                          {link.title}
+                        </Button>
                       </a>
                     ))}
                   </div>
