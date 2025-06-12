@@ -264,7 +264,7 @@ function App() {
       <div className="mt-10 mb-2 flex justify-center overflow-hidden md:mb-10">
         <h1
           id="name"
-          className="-translate-y-full text-[3.5rem] font-bold md:text-[8rem]"
+          className="font-permanent -translate-y-full text-[4rem] font-bold md:text-[8.75rem]"
         >
           Oluwaseye
         </h1>

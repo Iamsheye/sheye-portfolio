@@ -61,7 +61,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Parkinsans:wght@300..800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Parkinsans:wght@300..800&family=Permanent+Marker&display=swap",
       },
       {
         rel: "icon",

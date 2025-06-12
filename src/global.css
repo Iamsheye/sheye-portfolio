@@ -52,6 +52,7 @@ body {
   --color-pink: #ffade3;
   --color-orange: #fa543c;
   --color-grey: #c9c9c9;
+  --font-permanent: "Permanent Marker", cursive;
 }
 
 @theme inline {
