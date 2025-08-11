@@ -3,6 +3,8 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
+import { Draggable } from "gsap/Draggable";
+import { InertiaPlugin } from "gsap/InertiaPlugin";
 import { useRef, useState } from "react";
 import {
   GSAP,
@@ -22,6 +24,12 @@ import Flowers from "@/assets/Flower";
 import Button from "@/components/button";
 import Mushroom from "@/assets/Mushroom";
 import Fire from "@/assets/Fire";
+import {
+  StickerFour,
+  StickerOne,
+  StickerThree,
+  StickerTwo,
+} from "@/assets/stickers";
 
 const SearchSchema = z.object({
   tab: z.enum(["projects", "experience", "about"]).catch("projects"),
@@ -201,6 +209,8 @@ function App() {
 
   useGSAP(
     () => {
+      gsap.registerPlugin(Draggable, InertiaPlugin);
+
       const tl = gsap.timeline({
         delay: 0.7,
       });
@@ -215,6 +225,70 @@ function App() {
             duration: 0.75,
           });
         },
+      });
+
+      tl.to(".sticker", {
+        autoAlpha: 1,
+        duration: 1,
+        ease: "power2.out",
+        stagger: 0.35,
+      });
+
+      const container = document.querySelector("#name-sticker-container");
+      if (!container) return;
+
+      const stickers = document.querySelectorAll(".sticker");
+
+      stickers.forEach((sticker, ind) => {
+        switch (ind) {
+          case 0:
+            sticker.classList.add("top-[18%]", "-left-6");
+            break;
+          case 1:
+            sticker.classList.add("bottom-1", "left-9");
+            break;
+          case 2:
+            sticker.classList.add("right-[19%]", "bottom-0.5");
+            break;
+          case 3:
+            sticker.classList.add("top-[12.5%]", "left-[calc(100%-30px)]");
+            break;
+        }
+
+        Draggable.create(sticker, {
+          type: "x,y",
+          bounds: "#name-sticker-container",
+          inertia: true,
+          edgeResistance: 0.65,
+          allowContextMenu: true,
+          cursor: "grab",
+          throwProps: {
+            x: { velocity: "auto", max: 35 },
+            y: { velocity: "auto", max: 35 },
+          },
+          onDragStart: function () {
+            gsap.set(this.target, {
+              cursor: "grabbing",
+              scale: 1.1,
+            });
+          },
+          onDrag: function () {
+            gsap.set(this.target, {
+              rotation: (this.x - this.startX) * 0.1,
+            });
+          },
+          onDragEnd: function () {
+            gsap.to(this.target, {
+              cursor: "grab",
+              scale: 1,
+              zIndex: 5,
+              rotation: 0,
+              boxShadow: "none",
+              duration: 0.3,
+              ease: "power2.out",
+            });
+          },
+        });
       });
 
       SplitText.create("#bio", {
@@ -245,13 +319,14 @@ function App() {
         autoAlpha: 0,
         yPercent: 25,
       });
+
       tl.to(
         mainSectionRef.current,
         {
           autoAlpha: 1,
           yPercent: 0,
         },
-        "+=2.5",
+        "+=1.25",
       );
     },
     {
@@ -261,13 +336,24 @@ function App() {
 
   return (
     <div className="container-wrapper">
-      <div className="mt-10 mb-2 flex justify-center overflow-hidden md:mb-10">
-        <h1
-          id="name"
-          className="font-permanent -translate-y-full text-[4rem] font-bold md:text-[8.75rem]"
-        >
-          Oluwaseye
-        </h1>
+      <div
+        id="name-sticker-container"
+        className="mt-10 mb-2 flex justify-center overflow-hidden md:mb-10"
+      >
+        <div className="relative">
+          {[StickerOne, StickerTwo, StickerThree, StickerFour].map(
+            (Sticker, ind) => (
+              <Sticker key={ind} className="sticker absolute z-5 opacity-0" />
+            ),
+          )}
+
+          <h1
+            id="name"
+            className="font-permanent -translate-y-full text-[4rem] font-bold md:text-[8.75rem]"
+          >
+            Oluwaseye
+          </h1>
+        </div>
       </div>
 
       <div className="mb-12 flex justify-center">
@@ -295,7 +381,7 @@ function App() {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-6 lg:gap-10">
-          {["Projects", "Experience", "About"].map((elem) => (
+          {["Projects", "About"].map((elem) => (
             <Link
               key={elem}
               to="/"
