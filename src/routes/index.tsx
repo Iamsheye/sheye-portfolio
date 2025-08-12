@@ -242,7 +242,7 @@ function App() {
           id="bio"
           className="max-w-[928px] text-center text-[1rem] tracking-[3%] opacity-0 md:text-[1.5rem]"
         >
-          I'm a Frontend Engineer with over 5 years of experience, specialising
+          I'm a Software Engineer with over 5 years of experience, specialising
           in crafting scalable and user-friendly web applications.
           My expertise spans multiple languages and frameworks including
           TypeScript, React.js, React Native, Next.js, Nest.js and more.
