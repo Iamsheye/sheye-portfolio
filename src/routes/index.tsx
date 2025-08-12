@@ -243,9 +243,9 @@ function App() {
           className="max-w-[928px] text-center text-[1rem] tracking-[3%] opacity-0 md:text-[1.5rem]"
         >
           I'm a Frontend Engineer with over 5 years of experience, specialising
-          in crafting efficient, scalable, and user-friendly web applications.
+          in crafting scalable and user-friendly web applications.
           My expertise spans multiple languages and frameworks including
-          JavaScript, TypeScript, React.js, Next.js, and more.
+          TypeScript, React.js, React Native, Next.js, Nest.js and more.
         </p>
       </div>
 
