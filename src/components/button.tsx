@@ -49,12 +49,14 @@ const Button = ({
 
       gsap.registerPlugin(DrawSVGPlugin);
 
-      const isMobile = window.innerWidth <= 768;
+      const canHover = window.matchMedia("(hover: hover)").matches;
 
       gsap.set(brushStrokeRef.current, {
-        drawSVG: isMobile ? "100%" : "0%",
-        fill: isMobile ? "#131111" : "none",
+        drawSVG: "0%",
+        fill: "none",
       });
+
+      if (!canHover) return;
 
       const onHover = () => {
         gsap.to(brushStrokeRef.current, {

@@ -145,7 +145,6 @@ function App() {
           onDragStart: function () {
             gsap.set(this.target, {
               cursor: "grabbing",
-              scale: 1.1,
             });
           },
           onDrag: function () {
@@ -156,12 +155,6 @@ function App() {
           onDragEnd: function () {
             gsap.to(this.target, {
               cursor: "grab",
-              scale: 1,
-              zIndex: 5,
-              rotation: 0,
-              boxShadow: "none",
-              duration: 0.3,
-              ease: "power2.out",
             });
           },
         });
@@ -224,7 +217,10 @@ function App() {
         <div className="relative">
           {[StickerOne, StickerTwo, StickerThree, StickerFour].map(
             (Sticker, ind) => (
-              <Sticker key={ind} className="sticker absolute z-5 opacity-0" />
+              <Sticker
+                key={ind}
+                className="sticker absolute z-5 scale-[45%] opacity-0 md:scale-100"
+              />
             ),
           )}
 
@@ -243,9 +239,9 @@ function App() {
           className="max-w-[928px] text-center text-[1rem] tracking-[3%] opacity-0 md:text-[1.5rem]"
         >
           I'm a Software Engineer with over 5 years of experience, specialising
-          in crafting scalable and user-friendly web applications.
-          My expertise spans multiple languages and frameworks including
-          TypeScript, React.js, React Native, Next.js, Nest.js and more.
+          in crafting scalable and user-friendly web applications. My expertise
+          spans multiple languages and frameworks including TypeScript,
+          React.js, React Native, Tanstack, Next.js, Nest.js and more.
         </p>
       </div>
 
@@ -265,6 +261,7 @@ function App() {
           {["Projects", "About"].map((elem) => (
             <Link
               key={elem}
+              replace
               to="/"
               search={{
                 tab: elem.toLowerCase(),
@@ -301,10 +298,13 @@ function App() {
             <a href="https://github.com/Iamsheye" target="_blank">
               <Button bgColor="bg-orange">GitHub</Button>
             </a>
-            <a href="https://x.com/sheye_majek" target="_blank">
+            {/* <a href="https://x.com/sheye_majek" target="_blank">
               <Button bgColor="bg-orange">Twitter (X)</Button>
+            </a> */}
+            <a href="https://dev.to/iamsheye" target="_blank">
+              <Button bgColor="bg-orange">Dev.to</Button>
             </a>
-            <a href="https://www.linkedin.com/in/majek-sheye/" target="_blank">
+            <a href="https://dev.to/iamsheye" target="_blank">
               <Button bgColor="bg-orange">LinkedIn</Button>
             </a>
           </div>
@@ -312,7 +312,7 @@ function App() {
 
         <div className="flex items-center gap-2.5">
           <p className="text-[20px] font-semibold md:text-2xl">Designed by:</p>
-          <a href="">
+          <a href="https://mojola.notion.site/Mojola-Ojoniyi-5012964d6a1c4f958780a9d4e31a3cbe?pvs=4">
             <Button bgColor="bg-orange">mothecreator</Button>
           </a>
         </div>
