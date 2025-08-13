@@ -287,11 +287,11 @@ function App() {
       </div>
 
       <footer className="mb-16 flex flex-col gap-14 sm:px-8 md:gap-10 md:px-16 lg:px-20">
-        <div className="flex flex-col gap-6 md:gap-8">
+        <div className="flex flex-col gap-6">
           <h2 className="text-[40px] font-bold md:text-[64px]">Get in touch</h2>
 
-          <div className="flex flex-wrap items-start gap-4 md:gap-6">
-            <Button bgColor="bg-purple">View resume</Button>
+          <div className="flex flex-wrap items-start gap-4">
+            {/* <Button bgColor="bg-purple">View resume</Button> */}
             <a href="mailto:seyepelumi@gmail.com">
               <Button bgColor="bg-purple">Send a mail</Button>
             </a>
