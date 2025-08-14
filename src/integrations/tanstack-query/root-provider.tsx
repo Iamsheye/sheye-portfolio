@@ -16,11 +16,13 @@ function getUrl() {
   return `${base}/api/trpc`;
 }
 
+const url = getUrl();
+console.log(url, "__TRPC Client URL__");
 export const trpcClient = createTRPCClient<TRPCRouter>({
   links: [
     httpBatchStreamLink({
       transformer: superjson,
-      url: getUrl(),
+      url: url,
       fetch: fetchPonyfill().fetch,
     }),
   ],
