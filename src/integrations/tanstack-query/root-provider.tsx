@@ -19,6 +19,10 @@ function getUrl() {
   return `http://localhost:${process.env.PORT ?? 3000}/api/trpc`;
 }
 
+// TODO: Remove this log
+console.log("URL:", getUrl());
+console.log("___________");
+
 export const trpcClient = createTRPCClient<TRPCRouter>({
   links: [
     httpBatchStreamLink({
