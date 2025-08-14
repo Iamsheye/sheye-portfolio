@@ -67,19 +67,11 @@ export async function getCurrentlyPlaying(): Promise<CurrentlyPlaying | null> {
   try {
     const access_token = await getAccessToken();
 
-    // TODO: Remove this log
-    console.log("Access Token:", access_token);
-    console.log("___________");
-
     const response = await fetch(SPOTIFY_NOW_PLAYING_ENDPOINT, {
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
     });
-
-    // TODO: Remove this log
-    console.log("response", response);
-    console.log("___________");
 
     if (response.status === 204 || response.status > 400) {
       return null;

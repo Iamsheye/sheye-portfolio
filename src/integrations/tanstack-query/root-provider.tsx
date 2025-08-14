@@ -9,7 +9,7 @@ import { TRPCProvider } from "@/integrations/trpc/react";
 function getUrl() {
   if (typeof window !== "undefined") {
     // browser should use relative path
-    return "/api/trpc";
+    return `${window.location.origin}/api/trpc`;
   }
   if (process.env.VERCEL_URL) {
     // reference for vercel.com
@@ -18,10 +18,6 @@ function getUrl() {
   // assume localhost
   return `http://localhost:${process.env.PORT ?? 3000}/api/trpc`;
 }
-
-// TODO: Remove this log
-console.log("URL:", getUrl());
-console.log("___________");
 
 export const trpcClient = createTRPCClient<TRPCRouter>({
   links: [
