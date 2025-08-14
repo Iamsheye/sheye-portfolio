@@ -2,14 +2,12 @@ import { useGSAP } from "@gsap/react";
 import {
   HeadContent,
   Scripts,
-  createRootRouteWithContext
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
 import gsap from "gsap";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-
-
 
 import appCss from "../global.css?url";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
