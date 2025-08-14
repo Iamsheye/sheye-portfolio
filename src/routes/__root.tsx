@@ -14,6 +14,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import PixelTrail from "@/components/pixel-trail.tsx";
 import { cn } from "@/lib/utils.ts";
+import { NowPlaying } from "@/components/now-playing.tsx";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -107,6 +108,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         </div>
 
         <Outlet />
+
+        <NowPlaying />
 
         <TanStackRouterDevtools />
         <TanStackQueryLayout />
