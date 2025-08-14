@@ -1,3 +1,4 @@
+import { useGSAP } from "@gsap/react";
 import {
   HeadContent,
   Outlet,
@@ -6,19 +7,27 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { Suspense } from "react";
+import { z } from "zod";
+
 import appCss from "../global.css?url";
 import TanStackQueryLayout from "../integrations/tanstack-query/layout.tsx";
 import type { TRPCRouter } from "@/integrations/trpc/router";
-import type { QueryClient } from "@tanstack/react-query";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import PixelTrail from "@/components/pixel-trail.tsx";
 import { cn } from "@/lib/utils.ts";
+import { NowPlaying } from "@/components/now-playing.tsx";
 
 interface MyRouterContext {
   queryClient: QueryClient;
   trpc: TRPCOptionsProxy<TRPCRouter>;
 }
+
+const spotifyErrorSearchSchema = z.object({
+  error: z.string().optional(),
+  error_details: z.string().optional(),
+});
 
 interface BarProps {
   bgFirst: string;
@@ -33,6 +42,7 @@ const Bars = ({ bgFirst, bgSecond, className }: BarProps) => (
 );
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  validateSearch: spotifyErrorSearchSchema,
   head: () => ({
     meta: [
       {
@@ -73,6 +83,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
+  loader: async ({ context }) => {
+    await context.queryClient.prefetchQuery(
+      context.trpc.getNowPlaying.queryOptions(),
+    );
+  },
   component: () => {
     useGSAP(
       () => {
@@ -110,6 +125,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
         <TanStackRouterDevtools />
         <TanStackQueryLayout />
+        <Suspense>
+          <NowPlaying />
+        </Suspense>
       </RootDocument>
     );
   },
