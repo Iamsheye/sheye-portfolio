@@ -1,4 +1,4 @@
-import type { CurrentlyPlaying } from "@/api";
+import type { CurrentlyPlaying } from "@/spotify";
 
 export function Player(props: CurrentlyPlaying) {
   return (
