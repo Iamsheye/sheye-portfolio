@@ -1,7 +1,7 @@
 // import { TRPCError } from '@trpc/server'
 import { createTRPCRouter, publicProcedure } from "./init";
 import type { TRPCRouterRecord } from "@trpc/server";
-import { getNowPlaying } from "@/api";
+import { getNowPlaying } from "@/spotify";
 // import { z } from 'zod'
 
 const peopleRouter = {
