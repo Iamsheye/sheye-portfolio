@@ -34,24 +34,23 @@ const SPOTIFY_TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
 const SPOTIFY_NOW_PLAYING_ENDPOINT =
   "https://api.spotify.com/v1/me/player/currently-playing";
 
-let cachedToken: { token: string; expires: number } | null = null;
-
 async function getAccessToken(): Promise<string> {
-  // Check if we have a valid cached token
-  if (cachedToken && Date.now() < cachedToken.expires) {
-    return cachedToken.token;
-  }
-
   const client_id = env.SPOTIFY_CLIENT_ID;
   const client_secret = env.SPOTIFY_CLIENT_SECRET;
+  const refresh_token = env.SPOTIFY_REFRESH_TOKEN;
 
   const response = await fetch(SPOTIFY_TOKEN_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${Buffer.from(`${client_id}:${client_secret}`).toString("base64")}`,
+      Authorization: `Basic ${Buffer.from(
+        `${client_id}:${client_secret}`,
+      ).toString("base64")}`,
     },
-    body: "grant_type=client_credentials",
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token,
+    }),
   });
 
   if (!response.ok) {
@@ -61,13 +60,6 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data: SpotifyTokenResponse = await response.json();
-
-  // Cache the token (expires in 1 hour, but we'll refresh a bit early)
-  cachedToken = {
-    token: data.access_token,
-    expires: Date.now() + (data.expires_in - 300) * 1000, // 5 minutes buffer
-  };
-
   return data.access_token;
 }
 
@@ -75,20 +67,25 @@ export async function getCurrentlyPlaying(): Promise<CurrentlyPlaying | null> {
   try {
     const access_token = await getAccessToken();
 
+    // TODO: Remove this log
+    console.log("Access Token:", access_token);
+    console.log("___________");
+
     const response = await fetch(SPOTIFY_NOW_PLAYING_ENDPOINT, {
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
     });
 
+    // TODO: Remove this log
+    console.log("response", response);
+    console.log("___________");
+
     if (response.status === 204 || response.status > 400) {
       return null;
     }
 
     const song: SpotifyCurrentlyPlayingResponse = await response.json();
-
-    // TODO: Remove
-    console.log("song", song);
 
     if (!song?.item) {
       return null;
