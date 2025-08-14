@@ -53,6 +53,8 @@ async function getAccessToken(): Promise<string> {
     }),
   });
 
+  console.log(response, "__SPOTIFY TOKEN RESPONSE__");
+
   if (!response.ok) {
     throw new Error(
       `Failed to get Spotify access token: ${response.statusText}`,
