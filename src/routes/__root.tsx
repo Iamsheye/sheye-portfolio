@@ -1,19 +1,22 @@
+import { useGSAP } from "@gsap/react";
 import {
   HeadContent,
-  Outlet,
   Scripts,
-  createRootRouteWithContext,
+  createRootRouteWithContext
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { TanstackDevtools } from "@tanstack/react-devtools";
+import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+
+
+
 import appCss from "../global.css?url";
-import TanStackQueryLayout from "../integrations/tanstack-query/layout.tsx";
-import type { TRPCRouter } from "@/integrations/trpc/router";
-import type { QueryClient } from "@tanstack/react-query";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
-import PixelTrail from "@/components/pixel-trail.tsx";
+import type { QueryClient } from "@tanstack/react-query";
+import type { TRPCRouter } from "@/integrations/trpc/router";
 import { cn } from "@/lib/utils.ts";
+import PixelTrail from "@/components/pixel-trail.tsx";
 import { NowPlaying } from "@/components/now-playing.tsx";
 
 interface MyRouterContext {
@@ -74,21 +77,29 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-  component: () => {
-    useGSAP(
-      () => {
-        gsap.to(".bars", {
-          yPercent: -100,
-          duration: 0.75,
-          stagger: 0.025,
-          // ease: "back.out",
-        });
-      },
-      { dependencies: [] },
-    );
+  shellComponent: RootDocument,
+});
 
-    return (
-      <RootDocument>
+function RootDocument({ children }: { children: React.ReactNode }) {
+  useGSAP(
+    () => {
+      gsap.to(".bars", {
+        yPercent: -100,
+        duration: 0.75,
+        stagger: 0.025,
+        // ease: "back.out",
+      });
+    },
+    { dependencies: [] },
+  );
+
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+
+      <body>
         <div className="pointer-events-none fixed inset-0 h-full w-full">
           <PixelTrail
             pixelSize={16}
@@ -107,26 +118,23 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           <Bars bgFirst="bg-[#A0A0E6]" bgSecond="bg-black" />
         </div>
 
-        <Outlet />
-
         <NowPlaying />
 
-        <TanStackRouterDevtools />
-        <TanStackQueryLayout />
-      </RootDocument>
-    );
-  },
-});
-
-function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-
-      <body>
         {children}
+
+        <TanstackDevtools
+          config={{
+            position: "bottom-left",
+          }}
+          plugins={[
+            {
+              name: "Tanstack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+            TanStackQueryDevtools,
+          ]}
+        />
+
         <Scripts />
       </body>
     </html>

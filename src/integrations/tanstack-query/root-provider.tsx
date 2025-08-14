@@ -7,16 +7,11 @@ import type { TRPCRouter } from "@/integrations/trpc/router";
 import { TRPCProvider } from "@/integrations/trpc/react";
 
 function getUrl() {
-  if (typeof window !== "undefined") {
-    // browser should use relative path
-    return `${window.location.origin}/api/trpc`;
-  }
-  if (process.env.VERCEL_URL) {
-    // reference for vercel.com
-    return `https://${process.env.VERCEL_URL}/api/trpc`;
-  }
-  // assume localhost
-  return `http://localhost:${process.env.PORT ?? 3000}/api/trpc`;
+  const base = (() => {
+    if (typeof window !== "undefined") return "";
+    return `http://localhost:${process.env.PORT ?? 3000}`;
+  })();
+  return `${base}/api/trpc`;
 }
 
 export const trpcClient = createTRPCClient<TRPCRouter>({
@@ -28,26 +23,31 @@ export const trpcClient = createTRPCClient<TRPCRouter>({
   ],
 });
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    dehydrate: { serializeData: superjson.serialize },
-    hydrate: { deserializeData: superjson.deserialize },
-  },
-});
-
-const serverHelpers = createTRPCOptionsProxy({
-  client: trpcClient,
-  queryClient: queryClient,
-});
-
 export function getContext() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      dehydrate: { serializeData: superjson.serialize },
+      hydrate: { deserializeData: superjson.deserialize },
+    },
+  });
+
+  const serverHelpers = createTRPCOptionsProxy({
+    client: trpcClient,
+    queryClient: queryClient,
+  });
   return {
     queryClient,
     trpc: serverHelpers,
   };
 }
 
-export function Provider({ children }: { children: React.ReactNode }) {
+export function Provider({
+  children,
+  queryClient,
+}: {
+  children: React.ReactNode;
+  queryClient: QueryClient;
+}) {
   return (
     <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
       {children}
