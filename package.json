@@ -29,6 +29,7 @@
     "@trpc/tanstack-react-query": "^11.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "fetch-ponyfill": "^7.1.0",
     "gsap": "^3.13.0",
     "lucide-react": "^0.476.0",
     "react": "^19.0.0",

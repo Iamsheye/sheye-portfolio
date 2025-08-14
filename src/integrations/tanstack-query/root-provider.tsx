@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import superjson from "superjson";
 import { createTRPCClient, httpBatchStreamLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import fetchPonyfill from "fetch-ponyfill";
 
 import type { TRPCRouter } from "@/integrations/trpc/router";
 import { TRPCProvider } from "@/integrations/trpc/react";
@@ -19,6 +20,7 @@ export const trpcClient = createTRPCClient<TRPCRouter>({
     httpBatchStreamLink({
       transformer: superjson,
       url: getUrl(),
+      fetch: fetchPonyfill().fetch,
     }),
   ],
 });
