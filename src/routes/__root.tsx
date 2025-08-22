@@ -47,7 +47,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         title: "Oluwaseye's Portfolio",
       },
       {
-        description: "Oluwaseye Majekodunmi's Portfolio",
+        name: "description",
+        content: "Oluwaseye Majekodunmi's Portfolio",
       },
       {
         property: "og:title",
