@@ -69,6 +69,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         property: "og:url",
         content: "https://oluwaseye.dev",
       },
+      {
+        property: "twitter:card",
+        content: "summary_large_image",
+      },
     ],
     links: [
       {
