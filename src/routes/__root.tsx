@@ -7,6 +7,7 @@ import {
 import gsap from "gsap";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
+import { Analytics } from "@vercel/analytics/react";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
 import appCss from "../global.css?url";
@@ -45,10 +46,35 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Oluwaseye Majekodunmi",
+        title: "Oluwaseye's Portfolio",
       },
       {
-        description: "Oluwaseye Majekodunmi's Portfolio",
+        name: "description",
+        content: "Oluwaseye Majekodunmi's Portfolio",
+      },
+      {
+        property: "og:title",
+        content: "Oluwaseye's Portfolio",
+      },
+      {
+        property: "og:description",
+        content: "Oluwaseye Majekodunmi's Portfolio",
+      },
+      {
+        property: "og:image",
+        content: "https://oluwaseye.dev/og-image.webp",
+      },
+      {
+        property: "og:site_name",
+        content: "Oluwaseye's Portfolio",
+      },
+      {
+        property: "og:url",
+        content: "https://oluwaseye.dev",
+      },
+      {
+        property: "twitter:card",
+        content: "summary_large_image",
       },
     ],
     links: [
@@ -134,6 +160,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         />
 
         <Scripts />
+        <Analytics />
       </body>
     </html>
   );

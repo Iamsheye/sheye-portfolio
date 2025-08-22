@@ -11,7 +11,7 @@ const About = () => {
       <LoveSticker className="absolute bottom-0 left-0 z-5" />
 
       <img
-        src="./palmer.png"
+        src="./palmer.webp"
         alt="Cole Palmer"
         className="absolute right-0 bottom-0 h-[160px] md:h-auto"
       />

@@ -185,7 +185,7 @@ function App() {
       });
 
       gsap.set(mainSectionRef.current, {
-        autoAlpha: 0,
+        // autoAlpha: 0,
         yPercent: 25,
       });
 
@@ -247,7 +247,7 @@ function App() {
 
       <div
         ref={mainSectionRef}
-        className="bg-purple relative mb-10 rounded-[40px] border-r-[10px] border-b-[10px] border-black px-6 pt-5 pb-[84px] md:rounded-[60px] md:border-r-[20px] md:border-b-[20px] md:pb-[168px] lg:px-20 lg:pt-16"
+        className="bg-purple relative mb-10 rounded-[40px] border-r-[10px] border-b-[10px] border-black px-6 pt-5 pb-[84px] opacity-0 md:rounded-[60px] md:border-r-[20px] md:border-b-[20px] md:pb-[168px] lg:px-20 lg:pt-16"
       >
         <div className="absolute top-0 left-0 -translate-y-1/2">
           <Flowers id="flowers" className="scale-50 md:scale-100" />
