@@ -36,7 +36,6 @@
     "tailwind-merge": "3.5.0",
     "tailwindcss": "4.2.1",
     "tailwindcss-animate": "^1.0.7",
-    "vinxi": "^0.5.3",
     "@tanstack/react-devtools": "^0.2.2",
     "@tanstack/react-router-ssr-query": "^1.131.7",
     "@vercel/analytics": "^1.5.0",

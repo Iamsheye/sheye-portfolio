@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/env";
+import { setTokens } from "@/spotify";
 
 export const Route = createFileRoute("/api/spotify/callback")({
   server: {
@@ -10,34 +11,24 @@ export const Route = createFileRoute("/api/spotify/callback")({
         const error = url.searchParams.get("error");
 
         if (error) {
-          const errorUrl = new URL("/", url.origin);
-          errorUrl.searchParams.set("error", "Spotify Authorization Error");
-          errorUrl.searchParams.set("error_details", error);
-          return new Response(null, {
-            status: 302,
-            headers: {
-              Location: errorUrl.toString(),
-            },
-          });
+          return Response.json(
+            { error: "Spotify authorization denied", details: error },
+            { status: 400 },
+          );
         }
 
         if (!code) {
-          const errorUrl = new URL("/", url.origin);
-          errorUrl.searchParams.set("error", "Authorization code not found.");
-          return new Response(null, {
-            status: 302,
-            headers: {
-              Location: errorUrl.toString(),
-            },
-          });
+          return Response.json(
+            { error: "Authorization code not found" },
+            { status: 400 },
+          );
         }
 
         const basic = Buffer.from(
           `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`,
         ).toString("base64");
-        const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
 
-        const response = await fetch(TOKEN_ENDPOINT, {
+        const response = await fetch("https://accounts.spotify.com/api/token", {
           method: "POST",
           headers: {
             Authorization: `Basic ${basic}`,
@@ -45,59 +36,37 @@ export const Route = createFileRoute("/api/spotify/callback")({
           },
           body: new URLSearchParams({
             grant_type: "authorization_code",
-            code: code,
-            redirect_uri: url.origin + "/api/spotify/callback",
+            code,
+            redirect_uri: `${url.origin}/api/spotify/callback`,
           }),
         });
 
         if (!response.ok) {
           const text = await response.text();
-          const errorUrl = new URL("/", url.origin);
-          errorUrl.searchParams.set(
-            "error",
-            `Failed to exchange token: ${response.statusText}`,
+          return Response.json(
+            { error: `Token exchange failed: ${response.statusText}`, details: text },
+            { status: 502 },
           );
-          errorUrl.searchParams.set("error_details", text);
-          return new Response(null, {
-            status: 302,
-            headers: {
-              Location: errorUrl.toString(),
-            },
-          });
         }
 
-        const data = (await response.json()) as { refresh_token?: string };
-        const refreshToken = data.refresh_token;
+        const data = (await response.json()) as {
+          access_token: string;
+          refresh_token?: string;
+          expires_in: number;
+        };
 
-        if (!refreshToken) {
-          const errorUrl = new URL("/", url.origin);
-          errorUrl.searchParams.set(
-            "error",
-            "Refresh token not found in Spotify API response.",
+        if (!data.refresh_token) {
+          return Response.json(
+            { error: "No refresh token in Spotify response", details: data },
+            { status: 502 },
           );
-          errorUrl.searchParams.set(
-            "error_details",
-            JSON.stringify(data, null, 2),
-          );
-          return new Response(null, {
-            status: 302,
-            headers: {
-              Location: errorUrl.toString(),
-            },
-          });
         }
 
-        const successUrl = new URL("/", url.origin);
-        const headers = new Headers();
-        headers.append("Location", successUrl.toString());
-        headers.append(
-          "Set-Cookie",
-          `spotify_refresh_token=${refreshToken}; HttpOnly; Path=/; SameSite=Lax; Secure`,
-        );
+        setTokens(data.access_token, data.refresh_token, data.expires_in);
 
         return new Response(null, {
           status: 302,
-          headers,
+          headers: { Location: "/" },
         });
       },
     },

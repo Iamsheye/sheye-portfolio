@@ -19,6 +19,7 @@ type SpotifyTokenResponse = {
   access_token: string;
   token_type: string;
   expires_in: number;
+  refresh_token?: string;
   scope: string;
 };
 
@@ -53,7 +54,31 @@ type SpotifyRecentlyPlayedResponse = {
   }>;
 };
 
+const tokenStore = {
+  accessToken: null as string | null,
+  refreshToken: null as string | null,
+  expiresAt: 0,
+};
+
+export function setTokens(accessToken: string, refreshToken: string, expiresIn: number) {
+  tokenStore.accessToken = accessToken;
+  tokenStore.refreshToken = refreshToken;
+  tokenStore.expiresAt = Date.now() + expiresIn * 1000;
+}
+
+export function isAuthorized(): boolean {
+  return tokenStore.refreshToken !== null;
+}
+
 async function getAccessToken(): Promise<string> {
+  if (!tokenStore.refreshToken) {
+    throw new Error("Spotify not authorized. Visit /api/spotify/authorize to connect.");
+  }
+
+  if (tokenStore.accessToken && Date.now() < tokenStore.expiresAt - 60_000) {
+    return tokenStore.accessToken;
+  }
+
   const basic = Buffer.from(
     `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`,
   ).toString("base64");
@@ -66,7 +91,7 @@ async function getAccessToken(): Promise<string> {
     },
     body: new URLSearchParams({
       grant_type: "refresh_token",
-      refresh_token: env.SPOTIFY_REFRESH_TOKEN,
+      refresh_token: tokenStore.refreshToken,
     }),
   });
 
@@ -75,6 +100,13 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data = (await response.json()) as SpotifyTokenResponse;
+
+  tokenStore.accessToken = data.access_token;
+  tokenStore.expiresAt = Date.now() + data.expires_in * 1000;
+  if (data.refresh_token) {
+    tokenStore.refreshToken = data.refresh_token;
+  }
+
   return data.access_token;
 }
 
