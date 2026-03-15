@@ -64,9 +64,22 @@ export const Route = createFileRoute("/api/spotify/callback")({
 
         setTokens(data.access_token, data.refresh_token, data.expires_in);
 
+        const isProd = url.origin !== "http://localhost:3000" && url.origin !== "http://localhost:5173";
+        const cookie = [
+          `spotify_refresh_token=${encodeURIComponent(data.refresh_token)}`,
+          "Path=/",
+          "Max-Age=31536000",
+          "SameSite=Lax",
+          "HttpOnly",
+          ...(isProd ? ["Secure"] : []),
+        ].join("; ");
+
         return new Response(null, {
           status: 302,
-          headers: { Location: "/" },
+          headers: {
+            Location: "/",
+            "Set-Cookie": cookie,
+          },
         });
       },
     },

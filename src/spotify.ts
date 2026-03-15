@@ -66,12 +66,30 @@ export function setTokens(accessToken: string, refreshToken: string, expiresIn: 
   tokenStore.expiresAt = Date.now() + expiresIn * 1000;
 }
 
+const SPOTIFY_REFRESH_COOKIE = "spotify_refresh_token";
+
+function getRefreshTokenFromRequest(request: Request | null): string | null {
+  if (!request) return null;
+  const cookie = request.headers.get("cookie");
+  if (!cookie) return null;
+  const match = cookie.match(new RegExp(`${SPOTIFY_REFRESH_COOKIE}=([^;]+)`));
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1].trim());
+  } catch {
+    return null;
+  }
+}
+
 export function isAuthorized(): boolean {
   return tokenStore.refreshToken !== null;
 }
 
-async function getAccessToken(): Promise<string> {
-  if (!tokenStore.refreshToken) {
+async function getAccessToken(request?: Request | null): Promise<string> {
+  const refreshToken =
+    tokenStore.refreshToken ?? getRefreshTokenFromRequest(request ?? null);
+
+  if (!refreshToken) {
     throw new Error("Spotify not authorized. Visit /api/spotify/authorize to connect.");
   }
 
@@ -91,7 +109,7 @@ async function getAccessToken(): Promise<string> {
     },
     body: new URLSearchParams({
       grant_type: "refresh_token",
-      refresh_token: tokenStore.refreshToken,
+      refresh_token: refreshToken,
     }),
   });
 
@@ -105,6 +123,8 @@ async function getAccessToken(): Promise<string> {
   tokenStore.expiresAt = Date.now() + data.expires_in * 1000;
   if (data.refresh_token) {
     tokenStore.refreshToken = data.refresh_token;
+  } else if (!tokenStore.refreshToken) {
+    tokenStore.refreshToken = refreshToken;
   }
 
   return data.access_token;
@@ -138,9 +158,11 @@ async function getRecentlyPlayed(
   }
 }
 
-export async function getNowPlaying(): Promise<NowPlayingData | null> {
+export async function getNowPlaying(
+  request?: Request | null,
+): Promise<NowPlayingData | null> {
   try {
-    const accessToken = await getAccessToken();
+    const accessToken = await getAccessToken(request);
 
     const response = await fetch(NOW_PLAYING_ENDPOINT, {
       headers: { Authorization: `Bearer ${accessToken}` },

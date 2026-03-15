@@ -10,9 +10,13 @@ import { TRPCProvider } from "@/integrations/trpc/react";
 function getUrl() {
   const base = (() => {
     if (typeof window !== "undefined") return "";
+    // Server: use SERVER_URL, Vercel’s VERCEL_URL, or localhost for local dev
+    const serverUrl = process.env.SERVER_URL;
+    if (serverUrl) return serverUrl.replace(/\/$/, "");
+    const vercelUrl = process.env.VERCEL_URL;
+    if (vercelUrl) return `https://${vercelUrl}`;
     return `http://localhost:${process.env.PORT ?? 3000}`;
   })();
-  // const base = "https://sheye-portfolio.vercel.app/";
   return `${base}/api/trpc`;
 }
 
