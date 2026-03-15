@@ -15,7 +15,7 @@ export function getRouter() {
       // scrollRestoration: true,
       defaultPreloadStaleTime: 0,
 
-      Wrap: (props: { children: React.ReactNode }) => {
+      Wrap: (props) => {
         return (
           <TanstackQuery.Provider>{props.children}</TanstackQuery.Provider>
         );

@@ -5,19 +5,25 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import {
+  // TanStackRouterDevtools,
+  TanStackRouterDevtoolsPanel,
+} from "@tanstack/react-router-devtools";
+import { Analytics } from "@vercel/analytics/react";
 import gsap from "gsap";
 import { Suspense, useState } from "react";
 import { z } from "zod";
 
+import { TanstackDevtools } from "@tanstack/react-devtools";
+import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+
 import appCss from "../global.css?url";
-import TanStackQueryLayout from "../integrations/tanstack-query/layout.tsx";
 import type { TRPCRouter } from "@/integrations/trpc/router";
-import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { QueryClient } from "@tanstack/react-query";
+import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { NowPlaying } from "@/components/now-playing.tsx";
 import PixelTrail from "@/components/pixel-trail.tsx";
 import { cn } from "@/lib/utils.ts";
-import { NowPlaying } from "@/components/now-playing.tsx";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -53,10 +59,35 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Oluwaseye Majekodunmi",
+        title: "Oluwaseye's Portfolio",
       },
       {
-        description: "Oluwaseye Majekodunmi's Portfolio",
+        name: "description",
+        content: "Oluwaseye Majekodunmi's Portfolio",
+      },
+      {
+        property: "og:title",
+        content: "Oluwaseye's Portfolio",
+      },
+      {
+        property: "og:description",
+        content: "Oluwaseye Majekodunmi's Portfolio",
+      },
+      {
+        property: "og:image",
+        content: "https://oluwaseye.dev/og-image.webp",
+      },
+      {
+        property: "og:site_name",
+        content: "Oluwaseye's Portfolio",
+      },
+      {
+        property: "og:url",
+        content: "https://oluwaseye.dev",
+      },
+      {
+        property: "twitter:card",
+        content: "summary_large_image",
       },
     ],
     links: [
@@ -127,8 +158,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
         <Outlet />
 
-        <TanStackRouterDevtools />
-        <TanStackQueryLayout />
+        {/* <TanStackRouterDevtools /> */}
+        {/* <TanStackQueryLayout /> */}
         {animationsDone && (
           <Suspense>
             <NowPlaying />
@@ -148,7 +179,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
       <body>
         {children}
+
+        <TanstackDevtools
+          config={{
+            position: "bottom-left",
+          }}
+          plugins={[
+            {
+              name: "Tanstack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+            TanStackQueryDevtools,
+          ]}
+        />
+
         <Scripts />
+        <Analytics />
       </body>
     </html>
   );

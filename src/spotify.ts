@@ -114,7 +114,7 @@ export async function getNowPlaying(): Promise<NowPlayingData | null> {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    if (response.status === 204 || response.status > 400) {
+    if (response.status === 204 || response.status >= 400) {
       return getRecentlyPlayed(accessToken);
     }
 
