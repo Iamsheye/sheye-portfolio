@@ -8,5 +8,5 @@ count.txt
 .nitro
 .tanstack
 .output
-.vinxi
 .env
+.pnpm-store/*

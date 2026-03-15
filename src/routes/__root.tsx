@@ -1,27 +1,39 @@
 import { useGSAP } from "@gsap/react";
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import gsap from "gsap";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanstackDevtools } from "@tanstack/react-devtools";
+import {
+  // TanStackRouterDevtools,
+  TanStackRouterDevtoolsPanel,
+} from "@tanstack/react-router-devtools";
 import { Analytics } from "@vercel/analytics/react";
+import gsap from "gsap";
+import { Suspense, useState } from "react";
+import { z } from "zod";
+
+import { TanstackDevtools } from "@tanstack/react-devtools";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
 import appCss from "../global.css?url";
-import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
-import type { QueryClient } from "@tanstack/react-query";
 import type { TRPCRouter } from "@/integrations/trpc/router";
-import { cn } from "@/lib/utils.ts";
-import PixelTrail from "@/components/pixel-trail.tsx";
+import type { QueryClient } from "@tanstack/react-query";
+import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { NowPlaying } from "@/components/now-playing.tsx";
+import PixelTrail from "@/components/pixel-trail.tsx";
+import { cn } from "@/lib/utils.ts";
 
 interface MyRouterContext {
   queryClient: QueryClient;
   trpc: TRPCOptionsProxy<TRPCRouter>;
 }
+
+const spotifyErrorSearchSchema = z.object({
+  error: z.string().optional(),
+  error_details: z.string().optional(),
+});
 
 interface BarProps {
   bgFirst: string;
@@ -36,6 +48,7 @@ const Bars = ({ bgFirst, bgSecond, className }: BarProps) => (
 );
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  validateSearch: spotifyErrorSearchSchema,
   head: () => ({
     meta: [
       {
@@ -101,29 +114,30 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-  shellComponent: RootDocument,
-});
+  loader: async ({ context }) => {
+    await context.queryClient.prefetchQuery(
+      context.trpc.getNowPlaying.queryOptions(),
+    );
+  },
+  component: () => {
+    const [animationsDone, setAnimationsDone] = useState(false);
 
-function RootDocument({ children }: { children: React.ReactNode }) {
-  useGSAP(
-    () => {
-      gsap.to(".bars", {
-        yPercent: -100,
-        duration: 0.75,
-        stagger: 0.025,
-        // ease: "back.out",
-      });
-    },
-    { dependencies: [] },
-  );
+    useGSAP(
+      () => {
+        const tl = gsap.timeline({
+          onComplete: () => setAnimationsDone(true),
+        });
+        tl.to(".bars", {
+          yPercent: -100,
+          duration: 0.75,
+          stagger: 0.025,
+        });
+      },
+      { dependencies: [] },
+    );
 
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-
-      <body>
+    return (
+      <RootDocument>
         <div className="pointer-events-none fixed inset-0 h-full w-full">
           <PixelTrail
             pixelSize={16}
@@ -142,22 +156,44 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <Bars bgFirst="bg-[#A0A0E6]" bgSecond="bg-black" />
         </div>
 
-        <NowPlaying />
+        <Outlet />
 
+        {/* <TanStackRouterDevtools /> */}
+        {/* <TanStackQueryLayout /> */}
+        {animationsDone && (
+          <Suspense>
+            <NowPlaying />
+          </Suspense>
+        )}
+      </RootDocument>
+    );
+  },
+});
+
+function RootDocument({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+
+      <body>
         {children}
 
-        <TanstackDevtools
-          config={{
-            position: "bottom-left",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        />
+        {import.meta.env.DEV && (
+          <TanstackDevtools
+            config={{
+              position: "bottom-left",
+            }}
+            plugins={[
+              {
+                name: "Tanstack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              TanStackQueryDevtools,
+            ]}
+          />
+        )}
 
         <Scripts />
         <Analytics />
