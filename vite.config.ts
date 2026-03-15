@@ -5,7 +5,7 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(() => ({
   plugins: [
     tsConfigPaths({
       projects: ["./tsconfig.json"],
@@ -14,8 +14,7 @@ export default defineConfig(({ command }) => ({
     tanstackStart({
       srcDirectory: "src",
     }),
-    // Nitro only for production build (Vercel); dev server uses TanStack Start's built-in server
-    ...(command === "build" ? [nitro()] : []),
+    nitro(),
     viteReact(),
   ],
 }));
