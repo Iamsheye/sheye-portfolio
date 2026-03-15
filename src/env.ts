@@ -6,6 +6,7 @@ export const env = createEnv({
     SERVER_URL: z.string().url().optional(),
     SPOTIFY_CLIENT_ID: z.string().min(1),
     SPOTIFY_CLIENT_SECRET: z.string().min(1),
+    SPOTIFY_REFRESH_TOKEN: z.string().min(1),
   },
 
   /**
@@ -22,7 +23,10 @@ export const env = createEnv({
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: import.meta.env,
+  runtimeEnv: {
+    ...process.env,
+    ...import.meta.env,
+  },
 
   /**
    * By default, this library will feed the environment variables directly to

@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import gsap from "gsap";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { z } from "zod";
 
 import appCss from "../global.css?url";
@@ -89,13 +89,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     );
   },
   component: () => {
+    const [animationsDone, setAnimationsDone] = useState(false);
+
     useGSAP(
       () => {
-        gsap.to(".bars", {
+        const tl = gsap.timeline({
+          onComplete: () => setAnimationsDone(true),
+        });
+        tl.to(".bars", {
           yPercent: -100,
           duration: 0.75,
           stagger: 0.025,
-          // ease: "back.out",
         });
       },
       { dependencies: [] },
@@ -125,9 +129,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
         <TanStackRouterDevtools />
         <TanStackQueryLayout />
-        <Suspense>
-          <NowPlaying />
-        </Suspense>
+        {animationsDone && (
+          <Suspense>
+            <NowPlaying />
+          </Suspense>
+        )}
       </RootDocument>
     );
   },

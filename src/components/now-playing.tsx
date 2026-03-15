@@ -7,55 +7,36 @@ import { useTRPC } from "@/integrations/trpc/react";
 
 export const NowPlaying = () => {
   const trpc = useTRPC();
-  const { data: nowPlaying } = useSuspenseQuery(
-    trpc.getNowPlaying.queryOptions(),
-  );
-  const playingRef = useRef<HTMLDivElement>(null);
-  const notPlayingRef = useRef<HTMLDivElement>(null);
+  const { data: nowPlaying } = useSuspenseQuery({
+    ...trpc.getNowPlaying.queryOptions(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchIntervalInBackground: false,
+  });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
-      if (!playingRef.current) return;
-      gsap.from(playingRef.current, {
-        opacity: 0,
-        y: -100,
-        duration: 0.5,
-      });
-    },
-    { dependencies: [nowPlaying], scope: playingRef },
-  );
-
-  useGSAP(
-    () => {
-      if (!notPlayingRef.current) return;
-      gsap.from(notPlayingRef.current, {
+      if (!containerRef.current) return;
+      gsap.from(containerRef.current, {
         opacity: 0,
         y: 100,
         duration: 0.5,
       });
     },
-    { dependencies: [nowPlaying], scope: notPlayingRef },
+    { scope: containerRef },
   );
 
+  if (!nowPlaying) return null;
+
   return (
-    <>
-      {nowPlaying ? (
-        <div
-          ref={playingRef}
-          className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-72 items-center justify-center"
-        >
-          <Player {...nowPlaying} />
-        </div>
-      ) : (
-        <div
-          ref={notPlayingRef}
-          className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-72 items-center justify-center"
-        >
-          <div className="flex w-full flex-col gap-4 rounded-md border border-neutral-200 bg-white/50 p-4 text-center text-lg font-semibold text-neutral-500 shadow-2xl backdrop-blur-lg dark:border-neutral-800/50 dark:bg-black/50 dark:text-neutral-300">
-            <p>Not playing anything right now.</p>
-          </div>
-        </div>
-      )}
-    </>
+    <div
+      ref={containerRef}
+      className="pointer-events-none fixed right-4 bottom-4 z-50"
+    >
+      <Player {...nowPlaying} />
+    </div>
   );
 };

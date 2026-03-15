@@ -1,17 +1,63 @@
 import { env } from "./env";
 
-const client_id = env.SPOTIFY_CLIENT_ID;
-const client_secret = env.SPOTIFY_CLIENT_SECRET;
+const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
+const NOW_PLAYING_ENDPOINT =
+  "https://api.spotify.com/v1/me/player/currently-playing";
+const RECENTLY_PLAYED_ENDPOINT =
+  "https://api.spotify.com/v1/me/player/recently-played";
 
-const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
-const NOW_PLAYING_ENDPOINT = `https://api.spotify.com/v1/me/player/currently-playing`;
-const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
-
-type AccessToken = {
-  access_token: string;
+export type NowPlayingData = {
+  isPlaying: boolean;
+  title: string;
+  artist: string;
+  album: string;
+  albumImageUrl: string;
+  songUrl: string;
 };
 
-export const getAccessToken = async (refreshToken: string) => {
+type SpotifyTokenResponse = {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+};
+
+type SpotifyNowPlayingResponse = {
+  is_playing: boolean;
+  item: {
+    name: string;
+    artists: Array<{ name: string }>;
+    album: {
+      name: string;
+      images: Array<{ url: string }>;
+    };
+    external_urls: {
+      spotify: string;
+    };
+  } | null;
+};
+
+type SpotifyRecentlyPlayedResponse = {
+  items: Array<{
+    track: {
+      name: string;
+      artists: Array<{ name: string }>;
+      album: {
+        name: string;
+        images: Array<{ url: string }>;
+      };
+      external_urls: {
+        spotify: string;
+      };
+    };
+  }>;
+};
+
+async function getAccessToken(): Promise<string> {
+  const basic = Buffer.from(
+    `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`,
+  ).toString("base64");
+
   const response = await fetch(TOKEN_ENDPOINT, {
     method: "POST",
     headers: {
@@ -20,90 +66,73 @@ export const getAccessToken = async (refreshToken: string) => {
     },
     body: new URLSearchParams({
       grant_type: "refresh_token",
-      refresh_token: refreshToken,
+      refresh_token: env.SPOTIFY_REFRESH_TOKEN,
     }),
   });
 
-  return response.json() as Promise<AccessToken>;
-};
-
-export type CurrentlyPlaying = {
-  album: string;
-  albumImageUrl: string;
-  artist: string;
-  isPlaying: boolean;
-  songUrl: string;
-  title: string;
-};
-
-type Image = {
-  url: string;
-};
-
-type SpotifyApi = {
-  is_playing: boolean;
-  item: {
-    name: string;
-    artists: Array<{
-      name: string;
-    }>;
-    album: {
-      name: string;
-      images: Array<Image>;
-    };
-    external_urls: {
-      spotify: string;
-    };
-  } | null;
-};
-
-export const getNowPlaying = async (
-  request: Request,
-): Promise<CurrentlyPlaying | null> => {
-  const cookie = request.headers.get("Cookie");
-  const refreshToken = cookie
-    ?.split(";")
-    .find((s) => s.trim().startsWith("spotify_refresh_token="))
-    ?.split("=")[1];
-
-  if (!refreshToken) {
-    return null;
-  }
-  const { access_token } = await getAccessToken(refreshToken);
-
-  const response = await fetch(NOW_PLAYING_ENDPOINT, {
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-    },
-  });
-
-  if (response.status === 204) {
-    return null;
+  if (!response.ok) {
+    throw new Error(`Failed to refresh Spotify token: ${response.statusText}`);
   }
 
+  const data = (await response.json()) as SpotifyTokenResponse;
+  return data.access_token;
+}
+
+async function getRecentlyPlayed(
+  accessToken: string,
+): Promise<NowPlayingData | null> {
   try {
-    const song = (await response.json()) as SpotifyApi;
+    const response = await fetch(`${RECENTLY_PLAYED_ENDPOINT}?limit=1`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
 
-    if (song.item === null) {
-      return null;
-    }
+    if (!response.ok) return null;
 
-    const isPlaying = song.is_playing;
-    const title = song.item.name;
-    const artist = song.item.artists.map((_artist) => _artist.name).join(", ");
-    const album = song.item.album.name;
-    const albumImageUrl = song.item.album.images[0].url;
-    const songUrl = song.item.external_urls.spotify;
+    const data = (await response.json()) as SpotifyRecentlyPlayedResponse;
+    const item = data.items.at(0);
+
+    if (!item) return null;
 
     return {
-      album,
-      albumImageUrl,
-      artist,
-      isPlaying,
-      songUrl,
-      title,
+      isPlaying: false,
+      title: item.track.name,
+      artist: item.track.artists.map((a) => a.name).join(", "),
+      album: item.track.album.name,
+      albumImageUrl: item.track.album.images[0]?.url ?? "",
+      songUrl: item.track.external_urls.spotify,
     };
-  } catch (error) {
+  } catch {
     return null;
   }
-};
+}
+
+export async function getNowPlaying(): Promise<NowPlayingData | null> {
+  try {
+    const accessToken = await getAccessToken();
+
+    const response = await fetch(NOW_PLAYING_ENDPOINT, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (response.status === 204 || response.status > 400) {
+      return getRecentlyPlayed(accessToken);
+    }
+
+    const data = (await response.json()) as SpotifyNowPlayingResponse;
+
+    if (!data.item) {
+      return getRecentlyPlayed(accessToken);
+    }
+
+    return {
+      isPlaying: data.is_playing,
+      title: data.item.name,
+      artist: data.item.artists.map((a) => a.name).join(", "),
+      album: data.item.album.name,
+      albumImageUrl: data.item.album.images[0]?.url ?? "",
+      songUrl: data.item.external_urls.spotify,
+    };
+  } catch {
+    return null;
+  }
+}

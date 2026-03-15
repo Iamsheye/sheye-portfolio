@@ -1,15 +1,15 @@
-import { QueryClient } from '@tanstack/react-query';
-import superjson from 'superjson';
-import { createTRPCClient, httpBatchStreamLink } from '@trpc/client';
-import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
+import { QueryClient } from "@tanstack/react-query";
+import superjson from "superjson";
+import { createTRPCClient, httpBatchStreamLink } from "@trpc/client";
+import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 
-import type { TRPCRouter } from '@/integrations/trpc/router';
-import { TRPCProvider } from '@/integrations/trpc/react';
+import type { TRPCRouter } from "@/integrations/trpc/router";
+import { TRPCProvider } from "@/integrations/trpc/react";
 
 function getUrl() {
   const base = (() => {
-    if (typeof window !== 'undefined') return '';
-    return `http://localhost:${process.env.PORT ?? 3000}`;
+    if (typeof window !== "undefined") return "";
+    return `http://localhost:${process.env.PORT ?? 5173}`;
   })();
   return `${base}/api/trpc`;
 }
