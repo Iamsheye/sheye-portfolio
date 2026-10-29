@@ -1,37 +1,47 @@
-import { createRouter as createTanstackRouter } from "@tanstack/react-router";
-import { routerWithQueryClient } from "@tanstack/react-router-with-query";
-import * as TanstackQuery from "./integrations/tanstack-query/root-provider";
+import { QueryClient } from '@tanstack/react-query'
+import { createRouter as createTanstackRouter } from '@tanstack/react-router'
+import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 
 // Import the generated route tree
-import { routeTree } from "./routeTree.gen";
-import "./global.css";
+import { routeTree } from './routeTree.gen'
+import './global.css'
 
-// Create a new router instance
-export const createRouter = () => {
-  const router = routerWithQueryClient(
-    createTanstackRouter({
-      routeTree,
-      context: {
-        ...TanstackQuery.getContext(),
+// Create a new router instance.
+// TanStack Start calls `getRouter` on the server (per request) and on the
+// client (once) to obtain the router instance.
+export function getRouter() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 30_000,
       },
-      // scrollRestoration: true,
-      defaultPreloadStaleTime: 0,
+    },
+  })
 
-      Wrap: (props: { children: React.ReactNode }) => {
-        return (
-          <TanstackQuery.Provider>{props.children}</TanstackQuery.Provider>
-        );
-      },
-    }),
-    TanstackQuery.getContext().queryClient,
-  );
+  const router = createTanstackRouter({
+    routeTree,
+    context: {
+      queryClient,
+    },
+    defaultPreload: 'intent',
+    defaultPreloadStaleTime: 0,
+    scrollRestoration: true,
+  })
 
-  return router;
-};
+  setupRouterSsrQueryIntegration({
+    router,
+    queryClient,
+  })
+
+  return router
+}
+
+// Keep the old name as an alias so any remaining imports keep working.
+export const createRouter = getRouter
 
 // Register the router instance for type safety
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface Register {
-    router: ReturnType<typeof createRouter>;
+    router: ReturnType<typeof getRouter>
   }
 }

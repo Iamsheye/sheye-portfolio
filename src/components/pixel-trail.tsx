@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { v4 as uuidv4 } from "uuid";
+import React, { useCallback, useEffect, useId, useMemo, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -25,7 +24,7 @@ const PixelTrail = ({
   const dimensions = useDimensions(
     containerRef as React.RefObject<HTMLElement>,
   );
-  const trailId = useRef(uuidv4());
+  const trailId = useId().replace(/:/g, "");
 
   // fire the pixel at x,y when the user moves anywhere on window
   useEffect(() => {
@@ -34,7 +33,7 @@ const PixelTrail = ({
       const rect = containerRef.current.getBoundingClientRect();
       const x = Math.floor((e.clientX - rect.left) / pixelSize);
       const y = Math.floor((e.clientY - rect.top) / pixelSize);
-      const el = document.getElementById(`${trailId.current}-pixel-${x}-${y}`);
+      const el = document.getElementById(`${trailId}-pixel-${x}-${y}`);
       if (el) {
         const animate = (el as any).__animatePixel;
         if (animate) animate();
@@ -66,7 +65,7 @@ const PixelTrail = ({
           {Array.from({ length: columns }).map((__, colIndex) => (
             <PixelDot
               key={`${colIndex}-${rowIndex}`}
-              id={`${trailId.current}-pixel-${colIndex}-${rowIndex}`}
+              id={`${trailId}-pixel-${colIndex}-${rowIndex}`}
               size={pixelSize}
               fadeDuration={fadeDuration}
               delay={delay}

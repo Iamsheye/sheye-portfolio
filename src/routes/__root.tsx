@@ -10,15 +10,12 @@ import { useGSAP } from "@gsap/react";
 import { Analytics } from "@vercel/analytics/react";
 import appCss from "../global.css?url";
 import TanStackQueryLayout from "../integrations/tanstack-query/layout.tsx";
-import type { TRPCRouter } from "@/integrations/trpc/router";
 import type { QueryClient } from "@tanstack/react-query";
-import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import PixelTrail from "@/components/pixel-trail.tsx";
 import { cn } from "@/lib/utils.ts";
 
 interface MyRouterContext {
   queryClient: QueryClient;
-  trpc: TRPCOptionsProxy<TRPCRouter>;
 }
 
 interface BarProps {
