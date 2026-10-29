@@ -1,87 +1,126 @@
-import { useState } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import Button from "../button";
 import { PERSONAL_PROJECTS } from "@/constants";
 
+const HIDDEN_TOP = "polygon(0 0, 100% 0, 100% 0, 0 0)";
+const FULL = "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
+const HIDDEN_BOTTOM = "polygon(0 100%, 100% 100%, 100% 100%, 0 100%)";
+
+const isDesktop = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(min-width: 768px)").matches;
+
 const Projects = () => {
-  const [hoverProjectIndex, setHoverProjectIndex] = useState<number | null>(
-    null,
-  );
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const containerRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const imageRefs = useRef<Array<HTMLImageElement | null>>([]);
+  const xToRefs = useRef<Array<gsap.QuickToFunc | null>>([]);
+  const yToRefs = useRef<Array<gsap.QuickToFunc | null>>([]);
+  const activeRef = useRef<number | null>(null);
 
-  useGSAP(
-    () => {
-      const GSAP_DESKTOP = gsap.matchMedia();
+  const { contextSafe } = useGSAP(() => {
+    containerRefs.current.forEach((el, i) => {
+      if (!el) return;
+      gsap.set(el, { clipPath: HIDDEN_TOP, x: 0, y: 0 });
+      xToRefs.current[i] = gsap.quickTo(el, "x", {
+        duration: 0.5,
+        ease: "power3",
+      });
+      yToRefs.current[i] = gsap.quickTo(el, "y", {
+        duration: 0.5,
+        ease: "power3",
+      });
+    });
+    imageRefs.current.forEach((img) => {
+      if (img) gsap.set(img, { scale: 1.4 });
+    });
+  });
 
-      if (hoverProjectIndex !== null) {
-        PERSONAL_PROJECTS.forEach((_, ind) => {
-          if (ind !== hoverProjectIndex) {
-            GSAP_DESKTOP.add(`(min-width: 768px)`, () => {
-              gsap.to(`#img-container-${ind}`, {
-                clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)",
-                duration: 0.3,
-                ease: "power3.in",
-              });
-            });
-          }
-        });
+  const handleEnter = contextSafe((index: number, x: number, y: number) => {
+    if (!isDesktop()) return;
+    const el = containerRefs.current[index];
+    const img = imageRefs.current[index];
+    if (!el) return;
+    activeRef.current = index;
+    // Freeze any in-flight exit/follow tweens, snap to cursor, then wipe open.
+    gsap.killTweensOf(el);
+    if (img) gsap.killTweensOf(img);
+    gsap.set(el, { clipPath: HIDDEN_TOP, x: x * 0.25, y: y * 0.25 });
+    gsap.to(el, {
+      clipPath: FULL,
+      duration: 0.7,
+      ease: "expo.out",
+      overwrite: "auto",
+    });
+    if (img) {
+      gsap.fromTo(
+        img,
+        { scale: 1.4 },
+        { scale: 1, duration: 0.7, ease: "expo.out", overwrite: "auto" },
+      );
+    }
+  });
 
-        GSAP_DESKTOP.add(`(min-width: 768px)`, () => {
-          gsap.to(`#img-container-${hoverProjectIndex}`, {
-            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
-            duration: 0.8,
-            ease: "power3.out",
-          });
-        });
-      } else {
-        PERSONAL_PROJECTS.forEach((_, ind) => {
-          GSAP_DESKTOP.add(`(min-width: 768px)`, () => {
-            gsap.to(`#img-container-${ind}`, {
-              clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)",
-              duration: 0.3,
-              ease: "power3.out",
-              x: 0,
-              y: 0,
-            });
-          });
-        });
-      }
-    },
-    { dependencies: [hoverProjectIndex] },
-  );
+  const handleFollow = (index: number, x: number, y: number) => {
+    if (!isDesktop()) return;
+    if (activeRef.current !== index) return;
+    xToRefs.current[index]?.(x * 0.25);
+    yToRefs.current[index]?.(y * 0.25);
+  };
 
-  useGSAP(
-    () => {
-      if (hoverProjectIndex !== null) {
-        gsap.to(`#img-container-${hoverProjectIndex}`, {
-          x: cursorPosition.x * 0.25,
-          y: cursorPosition.y * 0.25,
-          duration: 0.35,
-          ease: "power1.out",
-        });
-      }
-    },
-    { dependencies: [cursorPosition, hoverProjectIndex] },
-  );
+  const handleLeave = contextSafe((index: number) => {
+    if (!isDesktop()) return;
+    const el = containerRefs.current[index];
+    const img = imageRefs.current[index];
+    if (!el) return;
+    if (activeRef.current === index) activeRef.current = null;
+    // Kill enter/follow tweens so the image stays put while it wipes away.
+    gsap.killTweensOf(el);
+    if (img) gsap.killTweensOf(img);
+    gsap.to(el, {
+      clipPath: HIDDEN_BOTTOM,
+      duration: 0.45,
+      ease: "power3.in",
+      overwrite: "auto",
+      onComplete: () => {
+        // Reset to the top so the next enter always wipes downward.
+        gsap.set(el, { clipPath: HIDDEN_TOP, x: 0, y: 0 });
+      },
+    });
+    if (img) {
+      gsap.to(img, {
+        scale: 1.4,
+        duration: 0.45,
+        ease: "power3.in",
+        overwrite: "auto",
+      });
+    }
+  });
+
+  const relativePos = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
 
   return (
     <ul className="flex flex-col">
       {PERSONAL_PROJECTS.map((project, ind) => (
         <li
           key={project.name}
-          onMouseEnter={() => {
-            setHoverProjectIndex(ind);
+          onMouseEnter={(e) => {
+            const { x, y } = relativePos(e);
+            handleEnter(ind, x, y);
           }}
           onMouseLeave={() => {
-            setHoverProjectIndex(null);
+            handleLeave(ind);
           }}
           onMouseMove={(e) => {
-            // Track cursor position relative to the list item
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            setCursorPosition({ x, y });
+            const { x, y } = relativePos(e);
+            handleFollow(ind, x, y);
           }}
           className="relative border-dashed py-6 not-last:border-b-2 not-last:border-[#1311111F] md:py-8"
         >
@@ -127,13 +166,19 @@ const Projects = () => {
           </div>
 
           <div
-            id={`img-container-${ind}`}
-            className="absolute top-0 right-8 z-10 hidden h-full overflow-hidden rounded-2xl md:block"
+            ref={(el) => {
+              containerRefs.current[ind] = el;
+            }}
+            style={{ clipPath: HIDDEN_TOP }}
+            className="pointer-events-none absolute top-0 right-8 z-10 hidden h-full overflow-hidden rounded-2xl will-change-[clip-path,transform] md:block"
           >
             <img
+              ref={(el) => {
+                imageRefs.current[ind] = el;
+              }}
               src={project.image}
               alt={project.name}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover will-change-transform"
             />
           </div>
         </li>

@@ -240,8 +240,8 @@ function App() {
         >
           I'm a Software Engineer with over 5 years of experience, specialising
           in crafting scalable and user-friendly web applications. My expertise
-          spans multiple languages and frameworks including TypeScript,
-          React.js, React Native, Tanstack, Next.js, Nest.js and more.
+          spans multiple languages and frameworks including TypeScript, Golang,
+          React.js, React Native, Tanstack, Next.js, Nest.js, PostgreSQL and more.
         </p>
       </div>
 
